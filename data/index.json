@@ -1,0 +1,16 @@
+{
+  "site": {
+    "place_zh": "基隆河流域　暖暖溪（暖暖親水公園段）",
+    "place_en": "Nuannuan Creek, Keelung River Basin (Nuannuan Waterfront Park reach)",
+    "center": [25.0989, 121.7345],
+    "updated": "2026-10-23"
+  },
+  "flights": [
+    { "id": "2026-09-17", "no": 1, "date": "2026-09-17", "status": "ready", "path": "flights/2026-09-17/" },
+    { "id": "f2", "no": 2, "status": "planned" },
+    { "id": "f3", "no": 3, "status": "planned" },
+    { "id": "f4", "no": 4, "status": "planned" },
+    { "id": "f5", "no": 5, "status": "planned" },
+    { "id": "f6", "no": 6, "status": "planned" }
+  ]
+}

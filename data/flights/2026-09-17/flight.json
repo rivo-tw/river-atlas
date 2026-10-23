@@ -1,0 +1,73 @@
+{
+ "id": "2026-09-17",
+ "date": "2026-09-17",
+ "start_local": "7:08:22.92 AM",
+ "duration_s": 137.2,
+ "frames_analysed": 549,
+ "length_m": 644.4,
+ "altitude_m": 40.7,
+ "gsd_cm": 1.49,
+ "aircraft": "DJI Mini 5 Pro",
+ "water_w_median": 10.5,
+ "water_share_mean": 71.91,
+ "chan_frames": 453,
+ "color_anom_mean": 4.21,
+ "warn_thr": 25.0,
+ "color_warn_frames": 0,
+ "objects": {
+  "fish": 5,
+  "wood_branch": 11,
+  "unknown_floating_debris": 2,
+  "plastice_bag": 4,
+  "plastic_bottle": 2,
+  "natural_vegetation": 3,
+  "underwater_debris": 1
+ },
+ "debris_total": 20,
+ "excluded": {
+  "m1_tire_plastic": 12,
+  "people_frames": 40
+ },
+ "classes": {
+  "plastic_bottle": {
+   "group": "debris",
+   "zh": "寶特瓶",
+   "en": "Plastic bottle"
+  },
+  "plastice_bag": {
+   "group": "debris",
+   "zh": "塑膠袋",
+   "en": "Plastic bag"
+  },
+  "unknown_floating_debris": {
+   "group": "debris",
+   "zh": "漂浮雜物",
+   "en": "Floating debris"
+  },
+  "underwater_debris": {
+   "group": "debris",
+   "zh": "水下雜物",
+   "en": "Underwater debris"
+  },
+  "wood_branch": {
+   "group": "debris",
+   "zh": "樹枝漂流木",
+   "en": "Branches / driftwood"
+  },
+  "natural_vegetation": {
+   "group": "vegetation",
+   "zh": "水生植物",
+   "en": "Aquatic vegetation"
+  },
+  "fish": {
+   "group": "habitat",
+   "zh": "單隻魚",
+   "en": "Single fish"
+  },
+  "fish_group": {
+   "group": "habitat",
+   "zh": "魚群",
+   "en": "Fish school"
+  }
+ }
+}

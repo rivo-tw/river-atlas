@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>河川環境圖譜｜「河」你一起，讀懂這條河</title>
+<meta name="description" content="基隆河流域暖暖溪的無人機河川環境圖譜：水域範圍、水色異常、人為棄置、水生植物與魚類位置，依河段逐段呈現">
+<meta name="theme-color" content="#0067a5">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/vendor/leaflet.min.css">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">跳到主要內容</a>
+
+<header class="topbar" id="top">
+  <a class="brand" href="#top">
+    <img class="brand-logo" src="assets/img/favicon.svg" alt="" width="30" height="30">
+    <strong data-i18n="brand">河川環境圖譜</strong>
+    <span class="brand-sub" data-i18n="brandSub">「河」你一起，讀懂這條河</span>
+  </a>
+  <nav class="nav" id="nav" aria-label="主選單">
+    <a href="#map" data-i18n="navMap">地圖</a>
+    <a href="#strip" data-i18n="navStrip">河道長卷</a>
+    <a href="#sections" data-i18n="navSections">河段一覽</a>
+    <a href="#video" data-i18n="navVideo">分析影片</a>
+    <a href="#method" data-i18n="navMethod">方法</a>
+    <a href="#about" data-i18n="navAbout">關於計畫</a>
+    <span class="nav-ind" aria-hidden="true"></span>
+  </nav>
+  <div class="tools">
+    <div class="langs" role="radiogroup" aria-label="Language">
+      <button type="button" role="radio" data-lang="zh" aria-checked="true" lang="zh-Hant" aria-label="中文"><span class="long">中文</span><span class="short">中</span></button>
+      <button type="button" role="radio" data-lang="en" aria-checked="false" lang="en" aria-label="English"><span class="long">English</span><span class="short">EN</span></button>
+    </div>
+  </div>
+</header>
+<div class="scroll-sentinel" aria-hidden="true"></div>
+
+<main id="main">
+
+<!-- ============ intro ============ -->
+<section class="intro">
+  <div class="wrap">
+    <h1><span data-i18n="h1">河川環境圖譜</span><span class="place" id="placeLine">基隆河流域　暖暖溪（暖暖親水公園段）</span></h1>
+    <p class="lede" data-i18n="lede">無人機沿河道拍攝的影像，經影像辨識後依 20 公尺或 50 公尺分段整理，內容包含水域範圍、水色、棄置物、水生植物和魚類位置</p>
+    <dl class="facts-row" id="stats" aria-live="polite"></dl>
+  </div>
+</section>
+
+<!-- ============ map ============ -->
+<section class="mapsec" id="map" aria-labelledby="mapTitle">
+  <h2 class="sr" id="mapTitle" data-i18n="navMap">地圖</h2>
+  <div class="mapbox">
+    <div id="leaflet" class="leaflet" role="application" aria-label="河川環境圖譜地圖"></div>
+
+    <div class="bar bar-top">
+      <div class="flights" id="flights" role="tablist" aria-label="調查趟次"></div>
+      <div class="seg" id="binSeg" role="radiogroup" aria-label="分段長度">
+        <button type="button" role="radio" data-bin="20" aria-checked="false">20 m</button>
+        <button type="button" role="radio" data-bin="50" aria-checked="true">50 m</button>
+        <span class="seg-thumb" aria-hidden="true"></span>
+      </div>
+    </div>
+
+    <aside class="panel layers" id="layerPanel" aria-label="圖層">
+      <button type="button" class="panel-grab" id="layerGrab" aria-expanded="true" aria-controls="layerBody">
+        <span data-i18n="layers">圖層</span><span class="count" id="layerCount"></span>
+      </button>
+      <div class="panel-body" id="layerBody">
+        <p class="panel-label" data-i18n="colorBy">河段著色</p>
+        <div class="seg seg-wide" id="themeSeg" role="radiogroup" aria-label="河段著色"></div>
+        <p class="panel-label" data-i18n="layerList">七個判釋圖層</p>
+        <ul class="layer-list" id="layerList"></ul>
+        <p class="panel-label" data-i18n="basemap">底圖</p>
+        <div class="seg seg-wide" id="baseSeg" role="radiogroup" aria-label="底圖">
+          <button type="button" role="radio" data-base="emap" aria-checked="true" data-i18n="emap">電子地圖</button>
+          <button type="button" role="radio" data-base="photo" aria-checked="false" data-i18n="photo">正射影像</button>
+          <span class="seg-thumb" aria-hidden="true"></span>
+        </div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </aside>
+
+    <aside class="panel detail" id="detail" aria-live="polite" hidden>
+      <div class="sheet-grab" aria-hidden="true"></div>
+      <button type="button" class="close" id="detailClose" aria-label="關閉"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg></button>
+      <div id="detailBody"></div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ strip ============ -->
+<section class="block" id="strip" aria-labelledby="stripTitle">
+  <div class="wrap">
+    <header class="block-head">
+      <h2 id="stripTitle" data-i18n="stripTitle">河道長卷</h2>
+      <p data-i18n="stripLede">整趟影片依飛行位置接成一張長圖，左右拖曳可沿河移動，地圖上的橘色點標示目前位置</p>
+    </header>
+  </div>
+  <div class="strip-tools wrap">
+    <label class="switch"><input type="checkbox" id="stripWater" checked><span></span><b data-i18n="showWater">水域範圍</b></label>
+    <label class="switch"><input type="checkbox" id="stripObjects" checked><span></span><b data-i18n="showObjects">辨識物件</b></label>
+    <span class="strip-pos" id="stripPos" aria-live="polite">0 m</span>
+  </div>
+  <div class="strip" id="stripView" tabindex="0" role="slider" aria-label="河道長卷位置" aria-valuemin="0" aria-valuenow="0">
+    <div class="strip-track" id="stripTrack"></div>
+    <div class="strip-center" aria-hidden="true"></div>
+  </div>
+  <div class="strip-ruler wrap" id="stripRuler" aria-hidden="true"></div>
+  <p class="wrap hint" data-i18n="stripHint">拖曳或用鍵盤左右鍵移動　上方是行進方向的左岸</p>
+</section>
+
+<!-- ============ sections table ============ -->
+<section class="block alt" id="sections" aria-labelledby="secTitle">
+  <div class="wrap">
+    <header class="block-head">
+      <h2 id="secTitle" data-i18n="secTitle">河段一覽</h2>
+      <p data-i18n="secLede">位置從航線起點起算，每一列是一段，點選後地圖會移到那一段</p>
+    </header>
+    <div class="table-wrap">
+      <table class="sections" id="secTable">
+        <thead><tr>
+          <th scope="col" data-i18n="thIndex">位置索引</th>
+          <th scope="col" data-i18n="thGps">GPS 座標</th>
+          <th scope="col" class="num" data-i18n="thWater">水面寬（公尺）</th>
+          <th scope="col" class="num" data-i18n="thShare">河道有水比例</th>
+          <th scope="col" class="num" data-i18n="thColor">水色偏離（σ）</th>
+          <th scope="col" class="num" data-i18n="thDebris">棄置物（件）</th>
+          <th scope="col" class="num" data-i18n="thVeg">水生植物（處）</th>
+          <th scope="col" class="num" data-i18n="thFish">魚類（處）</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="note" data-i18n="secNote">水色偏離是同一段跟自己前幾趟的水色做比較，第 2 趟資料進來後才會有數字</p>
+  </div>
+</section>
+
+<!-- ============ video ============ -->
+<section class="block" id="video" aria-labelledby="vidTitle">
+  <div class="wrap narrow">
+    <header class="block-head">
+      <h2 id="vidTitle" data-i18n="vidTitle">分析影片</h2>
+      <p data-i18n="vidLede">左上是原始畫面和辨識框，右上是水域範圍，左下是水色異常的格子，右下是無人機當下的位置。137 秒的飛行加速成約 30 秒</p>
+    </header>
+    <div class="video-frame">
+      <video id="clip" controls playsinline preload="none" poster="data/flights/2026-09-17/analysis.jpg">
+        <source src="data/flights/2026-09-17/analysis.mp4" type="video/mp4">
+      </video>
+    </div>
+  </div>
+</section>
+
+<!-- ============ method ============ -->
+<section class="block alt" id="method" aria-labelledby="methodTitle">
+  <div class="wrap">
+    <header class="block-head">
+      <h2 id="methodTitle" data-i18n="methodTitle">方法</h2>
+    </header>
+    <ol class="steps">
+      <li><h3 data-i18n="m1t">沿河飛行</h3><p data-i18n="m1p">無人機在約 40 公尺高度、鏡頭朝正下方，沿著河道錄影。飛行紀錄每 0.1 秒留下一筆 GPS 位置、高度和機頭方向</p></li>
+      <li><h3 data-i18n="m2t">建立位置索引</h3><p data-i18n="m2p">把航線拉成一條從 0 公尺開始的距離軸，再切成 20 公尺或 50 公尺一段。每一筆判釋結果都換算成地面座標，同時記下它落在第幾段</p></li>
+      <li><h3 data-i18n="m3t">影像判釋</h3><p data-i18n="m3p">每秒取 4 格畫面。水面和河道用影像分割模型框出範圍，物件用物件辨識模型找出位置，水色用 RIVO 自己開發的水色一致性分析計算</p></li>
+      <li><h3 data-i18n="m4t">逐段彙整</h3><p data-i18n="m4p">同一個物件會在連續好幾格畫面出現，所以依地面位置合併成一筆。每一段再算出水面寬、水色偏離和各類物件的數量</p></li>
+    </ol>
+
+    <h3 class="sub" data-i18n="layerStatusTitle">七個圖層目前的狀態</h3>
+    <div class="table-wrap">
+      <table class="status" id="statusTable">
+        <thead><tr><th scope="col" data-i18n="thLayer">圖層</th><th scope="col" data-i18n="thHow">怎麼算</th><th scope="col" data-i18n="thState">狀態</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+
+    <h3 class="sub" data-i18n="rangeTitle">這一趟的範圍</h3>
+    <ul class="facts" id="facts"></ul>
+  </div>
+</section>
+
+<!-- ============ about ============ -->
+<section class="block" id="about" aria-labelledby="aboutTitle">
+  <div class="wrap narrow">
+    <header class="block-head">
+      <h2 id="aboutTitle" data-i18n="aboutTitle">關於計畫</h2>
+    </header>
+    <div class="prose">
+      <p data-i18n="a1">2025 年 11 月，基隆河八堵取水口上游約 2.5 公里處發生油汙事件，污染進入淨水系統，影響基隆與汐止約 50 萬人的用水。事後追查污染源花了 4 個月，其中一個原因是平時沒有一份「這條河平常長什麼樣」的紀錄可以比對。</p>
+      <p data-i18n="a2">基隆河全河有 13 個人工採樣的水質測站，每月採樣一次，相鄰兩站平均相距約 3.5 公里。測站之間的河段，缺少空間連續的環境紀錄。</p>
+      <p data-i18n="a3">這個計畫用無人機沿河連續拍攝，把每一趟的判釋結果放在同一套河段位置上，累積成可以跨期比對的河川環境圖譜。方法先在景美溪實飛驗證，再移到基隆河流域。因為基隆河沿線多處是禁限航區，目前的飛行河段在暖暖親水公園一帶的暖暖溪。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<dialog class="lightbox" id="lightbox" aria-labelledby="lbTitle">
+  <div class="lb-inner">
+    <figure class="lb-figure" id="lbFigure">
+      <img id="lbImg" alt="" draggable="false">
+      <div class="lb-grab" aria-hidden="true"></div>
+    </figure>
+    <div class="lb-side">
+      <div class="lb-head">
+        <h2 id="lbTitle"></h2>
+        <button type="button" class="lb-close" id="lbClose" data-i18n-aria="close" aria-label="關閉"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg></button>
+      </div>
+      <p class="lb-count" id="lbCount"></p>
+      <div class="seg seg-wide lb-view" id="lbView" role="radiogroup" aria-label="畫面">
+        <button type="button" role="radio" data-view="zoom" aria-checked="true" data-i18n="lbZoom">近看</button>
+        <button type="button" role="radio" data-view="ctx" aria-checked="false" data-i18n="lbCtx">整格畫面</button>
+        <span class="seg-thumb" aria-hidden="true"></span>
+      </div>
+      <dl class="kv" id="lbKv"></dl>
+      <div class="lb-actions">
+        <button type="button" class="lb-btn" id="lbMap" data-i18n="lbMap">在地圖上看</button>
+        <button type="button" class="lb-btn" id="lbStrip" data-i18n="lbStrip">在河道長卷看</button>
+      </div>
+      <div class="lb-nav">
+        <button type="button" id="lbPrev" aria-label="上一個"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="lbPrev">上一個</span></button>
+        <button type="button" id="lbNext" aria-label="下一個"><span data-i18n="lbNext">下一個</span><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="orgs">
+      <div class="org"><span class="role" data-i18n="host">主辦單位</span><img src="assets/img/wra.png" alt="" width="40" height="40"><span data-i18n="hostName">經濟部水利署第十河川分署</span></div>
+      <div class="org"><span class="role" data-i18n="mentor">輔導單位</span><img src="assets/img/dalangju.png" alt="" width="40" height="40"><span data-i18n="mentorName">大浪據文化有限公司</span></div>
+      <div class="org"><span class="role" data-i18n="exec">執行單位</span><img src="assets/img/rivo.png" alt="" class="rivo" width="98" height="20"><span data-i18n="execName">浚研系統股份有限公司</span></div>
+    </div>
+    <div class="foot-meta">
+      <p data-i18n="program">115 年「河」力，與你同在！流域環境公私協力企劃</p>
+      <p><span data-i18n="contact">聯絡</span>　<a href="mailto:rivo@rivo.com.tw">rivo@rivo.com.tw</a>　<span data-i18n="updated">資料更新</span> <span id="updated">2026-10-23</span></p>
+      <p class="small" data-i18n="tiles">底圖：內政部國土測繪中心 臺灣通用電子地圖、正射影像</p>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/vendor/leaflet.min.js"></script>
+<script src="assets/vendor/leaflet-heat.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
