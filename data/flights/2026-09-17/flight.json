@@ -69,5 +69,12 @@
    "zh": "魚群",
    "en": "Fish school"
   }
+ },
+ "db_flight": "flight001",
+ "sigma": {
+  "earlier": [],
+  "min_hist": 3,
+  "bins_20_with_sigma": 0,
+  "bins_50_with_sigma": 0
  }
 }

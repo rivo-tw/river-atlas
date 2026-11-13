@@ -26,6 +26,7 @@
     <a href="#map" data-i18n="navMap">地圖</a>
     <a href="#strip" data-i18n="navStrip">河道長卷</a>
     <a href="#sections" data-i18n="navSections">河段一覽</a>
+    <a href="#compare" data-i18n="navCompare">跨趟比較</a>
     <a href="#video" data-i18n="navVideo">分析影片</a>
     <a href="#method" data-i18n="navMethod">方法</a>
     <a href="#about" data-i18n="navAbout">關於計畫</a>
@@ -136,7 +137,60 @@
         <tbody></tbody>
       </table>
     </div>
-    <p class="note" data-i18n="secNote">水色偏離是同一段跟自己前幾趟的水色做比較，第 2 趟資料進來後才會有數字</p>
+    <p class="note" data-i18n="secNote">水色偏離（σ，標準差）：這一段這一趟的 HSV 飽和度，跟同一段更早至少 3 趟的平均值相比，差了幾個標準差。正值代表水色比平常鮮豔，負值代表比平常灰淡。前面不足 3 趟的趟次不計算</p>
+  </div>
+</section>
+
+<!-- ============ compare ============ -->
+<section class="block" id="compare" aria-labelledby="cmpTitle">
+  <div class="wrap">
+    <header class="block-head">
+      <h2 id="cmpTitle" data-i18n="cmpTitle">跨趟比較</h2>
+      <p data-i18n="cmpLede">6 趟飛行都對齊到同一條參考河道（全長 647.8 公尺），每 20 公尺一段。點選下面的趟次，3 張圖會用橘色標出那一趟，灰線是其他趟次</p>
+    </header>
+    <div class="cmp-pick" id="cmpPick" role="radiogroup" aria-label="標示的趟次"></div>
+    <div class="charts">
+      <figure class="chart" id="chartCov">
+        <figcaption><b data-i18n="cCovT">河道水面占比（%）</b><span data-i18n="cCovD">AI 判出的水面占河道的比例。這是影像的比例，不是水位或流量</span></figcaption>
+        <div class="chart-box"></div>
+      </figure>
+      <figure class="chart" id="chartA">
+        <figcaption><b data-i18n="cAT">水色異常比例（%）</b><span data-i18n="cAD">系統判為水色異常的面積占水面的比例，每 20 公尺取所有畫面的平均。滑鼠移上去可看到這一段有幾格畫面達 15% 以上</span></figcaption>
+        <div class="chart-box"></div>
+      </figure>
+      <figure class="chart" id="chartS">
+        <figcaption><b data-i18n="cST">水色 HSV 飽和度</b><span data-i18n="cSD">數值越低，水色越灰淡。淡藍色帶是第 1 至 5 趟的參考帶（P10 至 P90）</span></figcaption>
+        <div class="chart-box"></div>
+      </figure>
+      <figure class="chart" id="chartB">
+        <figcaption><b data-i18n="cBT">水色 Lab b*（藍黃軸）</b><span data-i18n="cBD">數值越高越偏黃，越低越偏藍。淡藍色帶是第 1 至 5 趟的參考帶（P10 至 P90）</span></figcaption>
+        <div class="chart-box"></div>
+      </figure>
+    </div>
+    <div class="cmp-legend" id="cmpLegend" aria-hidden="true"></div>
+    <details class="cmp-table">
+      <summary data-i18n="cmpTableSum">用表格看數字</summary>
+      <div class="table-wrap">
+        <table class="sections" id="cmpTable">
+          <thead><tr>
+            <th scope="col" data-i18n="cThSeg">參考河道位置</th>
+            <th scope="col" class="num" data-i18n="cThCov">水面占比</th>
+            <th scope="col" class="num" data-i18n="cThA">水色異常</th>
+            <th scope="col" class="num" data-i18n="cThS">HSV 飽和度</th>
+            <th scope="col" class="num" data-i18n="cThSBand">參考帶</th>
+            <th scope="col" class="num" data-i18n="cThB">Lab b*</th>
+            <th scope="col" class="num" data-i18n="cThBBand">參考帶</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </details>
+    <ul class="cmp-notes">
+      <li data-i18n="cN1">P10 至 P90：把第 1 至 5 趟同一段的數值由小排到大，去掉最低和最高各一成之後的範圍</li>
+      <li data-i18n="cN2">第 6 趟（11/5）鏡頭加了 ND8PL 濾鏡，當作驗證航次，不加入參考帶。空心圓是超出參考帶的河段</li>
+      <li data-i18n="cN3">超出參考帶表示這一段的影像水色和前 5 趟不同。光線、濾鏡、白平衡和拍攝角度都會改變影像水色，要回到原始畫面和現場確認原因</li>
+      <li data-i18n="cN4">第 4 趟（10/27）的比較資料來自系統資料庫，原始影片是 CPL 偏光鏡；地圖、長卷和分析影片用同一天的 N8PL 影片</li>
+    </ul>
   </div>
 </section>
 
@@ -145,7 +199,7 @@
   <div class="wrap narrow">
     <header class="block-head">
       <h2 id="vidTitle" data-i18n="vidTitle">分析影片</h2>
-      <p data-i18n="vidLede">左上是原始畫面和辨識框，右上是水域範圍，左下是水色異常的格子，右下是無人機當下的位置。137 秒的飛行加速成約 30 秒</p>
+      <p id="vidLede">左上是原始畫面和辨識框，右上是水域範圍，左下是水色異常的格子，右下是無人機當下的位置</p>
     </header>
     <div class="video-frame">
       <video id="clip" controls playsinline preload="none" poster="data/flights/2026-09-17/analysis.jpg">
@@ -237,7 +291,7 @@
     </div>
     <div class="foot-meta">
       <p data-i18n="program">115 年「河」力，與你同在！流域環境公私協力企劃</p>
-      <p><span data-i18n="contact">聯絡</span>　<a href="mailto:rivo@rivo.com.tw">rivo@rivo.com.tw</a>　<span data-i18n="updated">資料更新</span> <span id="updated">2026-10-23</span></p>
+      <p><span data-i18n="contact">聯絡</span>　<a href="mailto:rivo@rivo.com.tw">rivo@rivo.com.tw</a>　<span data-i18n="updated">資料更新</span> <span id="updated">2026-11-13</span></p>
       <p class="small" data-i18n="tiles">底圖：內政部國土測繪中心 臺灣通用電子地圖、正射影像</p>
     </div>
   </div>

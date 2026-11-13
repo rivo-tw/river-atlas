@@ -18,12 +18,12 @@
   };
   const LAYERS = [
     { id: "water", state: "ready", sw: "#0090e0" },
-    { id: "baseline", state: "planned" },
+    { id: "baseline", state: "prelim" },
     { id: "color", state: "ready", sw: "#ff5108" },
     { id: "debris", state: "ready", sw: "#ff5108" },
     { id: "veg", state: "prelim", sw: "#6f8f00" },
     { id: "habitat", state: "prelim", sw: "#00385e" },
-    { id: "change", state: "planned" },
+    { id: "change", state: "prelim" },
   ];
   const GROUP_LAYER = { debris: "debris", vegetation: "veg", habitat: "habitat" };
 
@@ -58,7 +58,7 @@
   S.fs = 1;   // 字級 control removed; text size follows the window only
   $$(".langs button").forEach((b) => b.addEventListener("click", () => {
     if (b.dataset.lang === S.lang) return;
-    S.lang = b.dataset.lang; store.set("lang", S.lang); applyLang(); renderAll(); requestAnimationFrame(placeNavInd);
+    S.lang = b.dataset.lang; store.set("lang", S.lang); applyLang(); renderAll(); cmp.render(); requestAnimationFrame(placeNavInd);
   }));
 
   /* ---------------------------------------------------------------- top bar: scroll edge + nav indicator */
@@ -247,6 +247,7 @@
 
   function drawStatic() {
     const d = S.data;
+    if (objLayer) objLayer.eachLayer((m) => m.remove());   // markers are added to the map one by one, so remove them one by one
     [trackLine, heatLayer, objLayer, droneMarker].forEach((l) => l && l.remove());
     trackLine = L.polyline(d.track.map((p) => [p[0], p[1]]), { color: "#00385e", weight: 3, opacity: 0.85, dashArray: "1 7", lineCap: "round" }).addTo(map);
     trackLine.on("click", (e) => {
@@ -291,7 +292,7 @@
     $("#layerList").innerHTML = LAYERS.map((l) => {
       const [name, sub] = t().layers[l.id];
       const tag = { ready: ["on", t().ready], prelim: ["pre", t().prelim], planned: ["plan", t().planned] }[l.state];
-      const can = l.state !== "planned";
+      const can = l.state !== "planned" && l.id in S.on;   // baseline / change live in the comparison, not on the map
       return `<li class="layer ${can ? "" : "is-plan"}">
         <input type="checkbox" id="ly-${l.id}" ${can && S.on[l.id] ? "checked" : ""} ${can ? "" : "disabled"}>
         <label for="ly-${l.id}">${l.sw ? `<span class="sw" style="background:${l.sw}"></span>` : ""}${name}<small>${sub}</small></label>
@@ -303,9 +304,7 @@
     // sigma compares a section with its own earlier flights: only offered once it exists
     const hasSigma = S.data.bins[S.bin].some((b) => b.color_sigma != null);
     if (!hasSigma && S.theme === "color_sigma") S.theme = "water_w";
-    // one flight: water colour is not compared between sections, so it is not a colouring option
-    if (!hasSigma && S.theme === "color_anom") S.theme = "water_w";
-    const themes = hasSigma ? ["water_w", "color_sigma", "debris"] : ["water_w", "debris"];
+    const themes = hasSigma ? ["water_w", "color_anom", "color_sigma", "debris"] : ["water_w", "color_anom", "debris"];
     $("#themeSeg").innerHTML = themes.map((k) => `<button type="button" role="radio" data-theme="${k}" aria-checked="${k === S.theme}">${t().themes[k]}</button>`).join("");
     themePlace = segInit($("#themeSeg"), (b) => { S.theme = b.dataset.theme; drawSections(); });
   }
@@ -314,6 +313,12 @@
 
   /* ---------------------------------------------------------------- detail panel */
   const fmt = (v, d = 1) => (v == null ? t().na : (+v).toFixed(d));
+  // why a section has no sigma: too few earlier flights overall, or none with data in this section
+  const sigmaWhy = (b) => {
+    const sg = S.data.flight.sigma;
+    if (!sg) return t().sigmaPending;
+    return sg.earlier.length < sg.min_hist ? t().sigmaFew(sg.earlier.length) : t().na;
+  };
   function openBin(id) {
     const b = S.data.bins[S.bin].find((x) => x.id === id);
     S.sel = { type: "bin", id };
@@ -325,9 +330,9 @@
       <dl class="kv">
         <dt>${tt.water_w}</dt><dd>${fmt(b.water_w)} m</dd>
         <dt>${tt.chan_w}</dt><dd>${fmt(b.chan_w)} m</dd>
-        <dt>${tt.water_share}</dt><dd>${fmt(b.water_share, 0)}%</dd>
-        <dt>${tt.color_anom}</dt><dd>${fmt(b.color_anom)}%</dd>
-        <dt>${tt.color_sigma}</dt><dd>${b.color_sigma == null ? tt.sigmaPending : `${b.color_sigma > 0 ? "+" : ""}${fmt(b.color_sigma)} σ`}</dd>
+        <dt>${tt.water_share}</dt><dd>${b.water_share == null ? tt.na : fmt(b.water_share, 0) + "%"}</dd>
+        <dt>${tt.color_anom}</dt><dd>${b.color_anom == null ? tt.na : fmt(b.color_anom) + "%"}</dd>
+        <dt>${tt.color_sigma}</dt><dd>${b.color_sigma == null ? sigmaWhy(b) : `${b.color_sigma > 0 ? "+" : ""}${fmt(b.color_sigma)} σ`}</dd>
         <dt>${tt.color_warn(S.data.flight.warn_thr)}</dt><dd>${b.color_warn} ${tt.frames}</dd>
         <dt>${tt.debris}</dt><dd>${b.debris} ${tt.items}</dd>
         <dt>${tt.vegetation}</dt><dd>${b.vegetation} ${tt.spots}</dd>
@@ -519,8 +524,8 @@
         <td><b>${tt.section(b.id)}</b>　<span class="mono">${tt.range(b.s0, b.s1)}</span></td>
         <td class="mono">${b.lat.toFixed(4)}, ${b.lon.toFixed(4)}</td>
         <td class="num"><span class="bar-in" style="width:${(b.water_w / maxW) * 48}px"></span>${fmt(b.water_w)}</td>
-        <td class="num">${fmt(b.water_share, 0)}%</td>
-        ${b.color_sigma == null ? `<td class="num pending">${tt.sigmaPending}</td>`
+        <td class="num">${b.water_share == null ? t().na : fmt(b.water_share, 0) + "%"}</td>
+        ${b.color_sigma == null ? `<td class="num pending">${sigmaWhy(b)}</td>`
           : `<td class="num ${b.color_sigma >= 1.5 ? "hot" : ""}">${b.color_sigma > 0 ? "+" : ""}${fmt(b.color_sigma)}</td>`}
         <td class="num">${b.debris}</td>
         <td class="num">${b.vegetation}</td>
@@ -551,18 +556,38 @@
       [tt.alt, `${f.altitude_m} m`], [tt.gsd, `${f.gsd_cm} cm/px`], [tt.len, `${f.length_m} m`],
       [tt.dur, `${f.duration_s} s`], [tt.frames, `${f.frames_analysed}`],
     ];
+    if (S.flight.note) rows.push([tt.note, S.flight.note[S.lang]]);
     $("#facts").innerHTML = rows.map(([k, v]) => `<li><span>${k}</span><span>${v}</span></li>`).join("");
   }
   function renderFlights() {
     $("#flights").innerHTML = S.index.flights.map((f) => {
-      const ready = f.status === "ready";
-      return `<button type="button" class="flight" role="tab" aria-selected="${S.flight && f.id === S.flight.id}" ${ready ? "" : "disabled"} data-id="${f.id}">
-        ${t().flight(f.no)}${ready ? ` <span class="mono">${f.date.slice(5).replace("-", "/")}</span>` : `<span class="soon">${t().planned}</span>`}</button>`;
+      const live = f.status === "ready" || f.status === "compare";
+      return `<button type="button" class="flight" role="tab" aria-selected="${S.flight && f.id === S.flight.id}" ${live ? "" : "disabled"} data-id="${f.id}"
+        ${f.status === "compare" ? `title="${t().compareOnly}"` : ""}>
+        ${t().flight(f.no)}${live ? ` <span class="mono">${f.date.slice(5).replace("-", "/")}</span>` : `<span class="soon">${t().planned}</span>`}</button>`;
     }).join("");
+    $$("#flights button:not([disabled])").forEach((b) => b.addEventListener("click", () => {
+      const f = S.index.flights.find((x) => x.id === b.dataset.id);
+      if (f.status === "compare") {          // database-only flight: show it in the comparison
+        cmp.pick(f.db); $("#compare").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" }); return;
+      }
+      if (S.flight && f.id === S.flight.id) return;
+      closeDetail(); loadFlight(f).then(() => cmp.pick(f.db));
+    }));
+  }
+
+  function renderVideo() {
+    const v = $("#clip"), p = S.flight.path, f = S.data.flight;
+    if (v.dataset.src !== p) {
+      v.dataset.src = p; v.pause(); v.poster = p + "analysis.jpg";
+      v.innerHTML = `<source src="${p}analysis.mp4" type="video/mp4">`; v.load();
+    }
+    $("#vidLede").textContent = t().vidLede(f.duration_s, f.date);
   }
 
   function renderAll() {
     if (!S.data) return;
+    renderVideo();
     renderFlights(); renderStats(); renderLayerPanel(); renderTable(); renderStatus(); renderFacts();
     drawSections(); strip.renderRuler();
     if (phone.matches && $("#layerGrab").getAttribute("aria-expanded") !== "true") { lst.y = lpClosed(); lpApply(lst.y); }
@@ -573,6 +598,8 @@
   const strip = {
     ready: false, x: 0, v: 0, target: null, raf: 0, scale: 1,
     init(meta, base) {
+      const again = this.ready;
+      cancelAnimationFrame(this.raf);
       this.meta = meta; this.base = base;
       this.view = $("#stripView"); this.track = $("#stripTrack");
       this.track.innerHTML = meta.tiles.map((tl) =>
@@ -585,9 +612,11 @@
         b.obj = o; this.track.appendChild(b); return b;
       });
       this.view.setAttribute("aria-valuemax", Math.round(meta.length_m));
-      this.bind(); this.ready = true; this.layout();
+      this.target = null; this.v = 0;
+      if (!again) this.bind();
+      this.ready = true; this.layout();
       this.set(Math.min(this.maxX, this.view.clientWidth / 2 / this.scale));   // open with the strip filling the view
-      new ResizeObserver(() => this.layout()).observe(this.view);
+      if (!again) new ResizeObserver(() => this.layout()).observe(this.view);
     },
     layout() {
       const m = this.meta, h = this.view.clientHeight;
@@ -720,7 +749,103 @@
   const io = new IntersectionObserver((es) => es.forEach((en) => {
     if (en.isIntersecting) { navLinks.forEach((a) => a.setAttribute("aria-current", String(a.getAttribute("href") === "#" + en.target.id))); placeNavInd(); }
   }), { rootMargin: "-45% 0px -50% 0px" });
-  ["map", "strip", "sections", "video", "method", "about"].forEach((id) => io.observe(document.getElementById(id)));
+  ["map", "strip", "sections", "compare", "video", "method", "about"].forEach((id) => io.observe(document.getElementById(id)));
+
+  /* ---------------------------------------------------------------- cross-flight comparison
+     data/compare.json comes from the RIVO GUI history database: every flight already aligned to
+     one reference route, 20 m segments. One flight is drawn in accent, the others in muted ink. */
+  const cmp = {
+    d: null, sel: null,
+    noOf(id) { const f = S.index.flights.find((x) => x.db === id); return f ? f.no : +id.slice(-3); },
+    init(d, sel) {
+      this.d = d; this.sel = sel || d.flights[d.flights.length - 1].id;
+      $$("#compare .chart").forEach((fig) => new ResizeObserver(() => this.draw()).observe($(".chart-box", fig)));
+      this.render();
+    },
+    pick(id) { if (!this.d || !id) return; this.sel = id; this.render(); },
+    render() {
+      if (!this.d) return;
+      const tt = t();
+      $("#cmpPick").innerHTML = this.d.flights.map((f) =>
+        `<button type="button" role="radio" aria-checked="${f.id === this.sel}" data-id="${f.id}">${tt.flight(this.noOf(f.id))} <span class="mono">${f.date.slice(5).replace("-", "/")}</span>${f.role === "validation" ? `<small>${tt.validation}</small>` : ""}</button>`).join("");
+      $$("#cmpPick button").forEach((b) => b.addEventListener("click", () => this.pick(b.dataset.id)));
+      $("#cmpLegend").innerHTML = `<span><i class="lg-sel"></i>${tt.flight(this.noOf(this.sel))}</span><span><i class="lg-oth"></i>${tt.otherFlights}</span><span><i class="lg-band"></i>${tt.bandName}</span><span><i class="lg-out"></i>${tt.outOfBand}</span>`;
+      this.table(); this.draw();
+    },
+    series(key) {   // key: cov | S | b  ->  {flightId: [value per segment]}
+      const out = {};
+      this.d.flights.forEach((f) => { out[f.id] = this.d.segments.map((g) => (key === "cov" || key === "anom" ? g[key][f.id] : g[key].v[f.id])); });
+      return out;
+    },
+    draw() {
+      if (!this.d) return;
+      [["chartCov", "cov"], ["chartA", "anom"], ["chartS", "S"], ["chartB", "b"]].forEach(([id, key]) => this.chart($("#" + id + " .chart-box"), key));
+    },
+    chart(box, key) {
+      const segs = this.d.segments, L = this.d.length_m, ser = this.series(key);
+      const band = key === "cov" || key === "anom" ? null : segs.map((g) => g[key].band);
+      const W = Math.max(280, box.clientWidth), H = W < 560 ? 220 : 260;
+      const m = { l: 40, r: 12, t: 12, b: 28 };
+      const all = Object.values(ser).flat().concat(band ? band.flat() : []).filter((v) => v != null);
+      let lo = Math.min(...all), hi = Math.max(...all); const pad = (hi - lo) * 0.06; lo -= pad; hi += pad;
+      if (key === "cov" || key === "anom") lo = Math.max(0, lo);
+      const X = (s) => m.l + (s / L) * (W - m.l - m.r), Y = (v) => m.t + (1 - (v - lo) / (hi - lo)) * (H - m.t - m.b);
+      const mid = segs.map((g) => (g.s0 + g.s1) / 2);
+      const path = (vals) => { let d = "", pen = false; vals.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? "L" : "M"}${X(mid[i]).toFixed(1)},${Y(v).toFixed(1)}`; pen = true; }); return d; };
+      const step = [1, 2, 5, 10, 20, 25, 50].find((k) => (hi - lo) / k <= 6) || 100;   // about 4 to 6 grid lines
+      let grid = "";
+      for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) grid += `<line class="gl" x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`;
+      for (let s = 0; s <= L; s += 100) grid += `<text class="ax" x="${X(s)}" y="${H - 8}" text-anchor="middle">${s} m</text>`;
+      let bandPath = "";
+      if (band) {
+        // one closed polygon per run of segments that have a band
+        let run = [];
+        const flush = () => { if (run.length) { const top = run.map((i) => `${X(mid[i]).toFixed(1)},${Y(band[i][2]).toFixed(1)}`), bot = run.slice().reverse().map((i) => `${X(mid[i]).toFixed(1)},${Y(band[i][0]).toFixed(1)}`); bandPath += `<polygon class="band" points="${top.concat(bot).join(" ")}"/>`; } run = []; };
+        band.forEach((b, i) => { if (b && segs[i][key].n_hist >= 2) run.push(i); else flush(); }); flush();
+      }
+      const others = this.d.flights.filter((f) => f.id !== this.sel).map((f) => `<path class="ln-oth" d="${path(ser[f.id])}"/>`).join("");
+      const sv = ser[this.sel];
+      // hollow "outside band" markers only for flights that did not build the band (validation flight)
+      const judged = !this.d.normal.includes(this.sel);
+      const dots = sv.map((v, i) => {
+        if (v == null) return "";
+        const b = band && band[i], out = judged && b && segs[i][key].n_hist >= 2 && (v < b[0] || v > b[2]);
+        return `<circle class="${out ? "dot-out" : "dot"}" cx="${X(mid[i]).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${out ? 4.5 : 3}"/>`;
+      }).join("");
+      box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${box.parentElement.querySelector("b").textContent}">
+        ${grid}${bandPath}${others}<path class="ln-sel" d="${path(sv)}"/>${dots}
+        <line class="xh" y1="${m.t}" y2="${H - m.b}" x1="-9" x2="-9"/></svg><div class="tip" hidden></div>`;
+      const svg = $("svg", box), tip = $(".tip", box), xh = $(".xh", box);
+      const fmtv = (v, i, id) => (v == null ? t().na : key === "cov" ? v.toFixed(1) + "%"
+        : key === "anom" ? `${v.toFixed(1)}%（${t().hiFrames(segs[i].anom_hi[id])}）` : v.toFixed(2));
+      svg.addEventListener("pointermove", (e) => {
+        const r = svg.getBoundingClientRect(), x = (e.clientX - r.left) * (W / r.width);
+        const i = Math.max(0, Math.min(segs.length - 1, Math.floor(((x - m.l) / (W - m.l - m.r)) * L / this.d.bin_m)));
+        xh.setAttribute("x1", X(mid[i])); xh.setAttribute("x2", X(mid[i]));
+        const g = segs[i], tt = t();
+        tip.innerHTML = `<b>${tt.range(Math.round(g.s0), Math.round(g.s1))}</b>` +
+          this.d.flights.map((f) => `<div class="${f.id === this.sel ? "on" : ""}"><span>${tt.flight(this.noOf(f.id))}</span><span>${fmtv(ser[f.id][i], i, f.id)}</span></div>`).join("") +
+          (band && band[i] && g[key].n_hist >= 2 ? `<div class="bd"><span>P10 ${tt.to} P90</span><span>${band[i][0].toFixed(2)} ${tt.to} ${band[i][2].toFixed(2)}</span></div>` : "");
+        tip.hidden = false;
+        const px = X(mid[i]) * (r.width / W);
+        tip.style.left = Math.min(r.width - tip.offsetWidth - 4, Math.max(4, px + 12)) + "px";
+      });
+      svg.addEventListener("pointerleave", () => { tip.hidden = true; xh.setAttribute("x1", -9); xh.setAttribute("x2", -9); });
+    },
+    table() {
+      const tt = t(), id = this.sel;
+      const pos = (v, b, n) => (v == null || !b || n < 2 ? "" : v < b[0] ? ` <span class="tag pre">${tt.below}</span>` : v > b[2] ? ` <span class="tag on">${tt.above}</span>` : "");
+      const f2 = (v) => (v == null ? tt.na : v.toFixed(2));
+      $("#cmpTable tbody").innerHTML = this.d.segments.map((g) => `<tr>
+        <td class="mono">${tt.range(Math.round(g.s0), Math.round(g.s1))}</td>
+        <td class="num">${g.cov[id] == null ? tt.na : g.cov[id].toFixed(1) + "%"}</td>
+        <td class="num">${g.anom[id] == null ? tt.na : g.anom[id].toFixed(1) + "%"}</td>
+        <td class="num">${f2(g.S.v[id])}${pos(g.S.v[id], g.S.band, g.S.n_hist)}</td>
+        <td class="num">${g.S.band && g.S.n_hist >= 2 ? `${f2(g.S.band[0])} ${tt.to} ${f2(g.S.band[2])}` : tt.na}</td>
+        <td class="num">${f2(g.b.v[id])}${pos(g.b.v[id], g.b.band, g.b.n_hist)}</td>
+        <td class="num">${g.b.band && g.b.n_hist >= 2 ? `${f2(g.b.band[0])} ${tt.to} ${f2(g.b.band[2])}` : tt.na}</td></tr>`).join("");
+    },
+  };
 
   /* ---------------------------------------------------------------- boot */
   async function getJSON(u) { const r = await fetch(u); if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }
@@ -731,7 +856,7 @@
     S.flight = { ...f, path: p };
     S.data = { flight, bins: { 20: b20, 50: b50 }, objects, heat, track };
     drawStatic();
-    if (!strip.ready) strip.init(stripMeta, p);
+    strip.init(stripMeta, p);
     renderAll();
   }
 
@@ -748,7 +873,9 @@
       S.index = await getJSON("data/index.json");
       $("#updated").textContent = S.index.site.updated;
       applyLang(); initMap(); lpInit();
-      await loadFlight(S.index.flights.find((f) => f.status === "ready"));
+      const first = S.index.flights.filter((f) => f.status === "ready").pop();   // newest flight first
+      await loadFlight(first);
+      try { cmp.init(await getJSON("data/compare.json"), first.db); } catch (e) { console.error(e); }
     } catch (err) {
       console.error(err);
       $("#stats").innerHTML = `<div><dt>Error</dt><dd style="font-size:1rem">${String(err.message || err)}</dd></div>`;
