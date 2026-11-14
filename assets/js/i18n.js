@@ -31,7 +31,6 @@ window.I18N_EN = {
   cN2: "The band is the same whichever flight is selected. Hollow circles mark segments where the selected flight is outside the band.",
   cN3: "Outside the band means the image colour differs from most flights. Light, filters, white balance and camera angle all change image colour, so the original footage and the site need to be checked.",
   cN4: "One video per day.",
-  cN5: "Flight 3 (20 Oct) is left out of the comparison: tree shadow covered most of the river and affected the water and colour readings.",
   vidTitle: "Analysis video",
   vidLede: "Top left: original video with detections. Top right: water extent. Bottom left: cells flagged by the water-colour analysis. Bottom right: the drone's position. The 137-second flight is sped up to about 30 seconds.",
   methodTitle: "Method",
