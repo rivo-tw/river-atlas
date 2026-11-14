@@ -317,6 +317,7 @@
   const sigmaWhy = (b) => {
     const sg = S.data.flight.sigma;
     if (!sg) return t().sigmaPending;
+    if (sg.in_comparison === false) return t().sigmaOut;
     return sg.earlier.length < sg.min_hist ? t().sigmaFew(sg.earlier.length) : t().na;
   };
   function openBin(id) {
@@ -758,18 +759,18 @@
     d: null, sel: null,
     noOf(id) { const f = S.index.flights.find((x) => x.db === id); return f ? f.no : +id.slice(-3); },
     init(d, sel) {
-      this.d = d; this.sel = sel || d.flights[d.flights.length - 1].id;
+      this.d = d; this.sel = d.flights.some((f) => f.id === sel) ? sel : d.flights[d.flights.length - 1].id;
       $$("#compare .chart").forEach((fig) => new ResizeObserver(() => this.draw()).observe($(".chart-box", fig)));
       this.render();
     },
-    pick(id) { if (!this.d || !id) return; this.sel = id; this.render(); },
+    pick(id) { if (!this.d || !id || !this.d.flights.some((f) => f.id === id)) return; this.sel = id; this.render(); },   // flights left out of the comparison keep the current pick
     render() {
       if (!this.d) return;
       const tt = t();
       $("#cmpPick").innerHTML = this.d.flights.map((f) =>
-        `<button type="button" role="radio" aria-checked="${f.id === this.sel}" data-id="${f.id}">${tt.flight(this.noOf(f.id))} <span class="mono">${f.date.slice(5).replace("-", "/")}</span>${f.role === "validation" ? `<small>${tt.validation}</small>` : ""}</button>`).join("");
+        `<button type="button" role="radio" aria-checked="${f.id === this.sel}" data-id="${f.id}">${tt.flight(this.noOf(f.id))} <span class="mono">${f.date.slice(5).replace("-", "/")}</span></button>`).join("");
       $$("#cmpPick button").forEach((b) => b.addEventListener("click", () => this.pick(b.dataset.id)));
-      $("#cmpLegend").innerHTML = `<span><i class="lg-sel"></i>${tt.flight(this.noOf(this.sel))}</span><span><i class="lg-oth"></i>${tt.otherFlights}</span><span><i class="lg-band"></i>${tt.bandName}</span><span><i class="lg-out"></i>${tt.outOfBand}</span>`;
+      $("#cmpLegend").innerHTML = `<span><i class="lg-sel"></i>${tt.flight(this.noOf(this.sel))}</span><span><i class="lg-oth"></i>${tt.otherFlights}</span><span><i class="lg-band"></i>${tt.bandName(this.d.flights.length)}</span><span><i class="lg-out"></i>${tt.outOfBand}</span>`;
       this.table(); this.draw();
     },
     series(key) {   // key: cov | S | b  ->  {flightId: [value per segment]}
@@ -779,14 +780,16 @@
     },
     draw() {
       if (!this.d) return;
-      [["chartCov", "cov"], ["chartA", "anom"], ["chartS", "S"], ["chartB", "b"]].forEach(([id, key]) => this.chart($("#" + id + " .chart-box"), key));
+      [["chartCov", "cov"], ["chartA", "anom"], ["chartS", "S"], ["chartB", "b"], ["chartAa", "a"], ["chartT", "tex"], ["chartL", "L"], ["chartF", "frag"]].filter(([, k]) => k in this.d.segments[0]).forEach(([id, key]) => this.chart($("#" + id + " .chart-box"), key));
     },
     chart(box, key) {
       const segs = this.d.segments, L = this.d.length_m, ser = this.series(key);
-      const band = key === "cov" || key === "anom" ? null : segs.map((g) => g[key].band);
+      // 2026-11-14 user: one band from ALL flights, the same whichever flight is selected; it grows as flights are added
+      const band = key === "cov" || key === "anom" ? null : segs.map((g) => (g[key].n_hist >= this.d.min_hist ? g[key].band : null));
       const W = Math.max(280, box.clientWidth), H = W < 560 ? 220 : 260;
       const m = { l: 40, r: 12, t: 12, b: 28 };
-      const all = Object.values(ser).flat().concat(band ? band.flat() : []).filter((v) => v != null);
+      const WARN = 25;   // GUI colour warning line (color_warning_pct = 25 %), same as panel 5 of the RIVO GUI
+      const all = Object.values(ser).flat().concat(band ? band.flat() : []).concat(key === "anom" ? [WARN] : []).filter((v) => v != null);
       let lo = Math.min(...all), hi = Math.max(...all); const pad = (hi - lo) * 0.06; lo -= pad; hi += pad;
       if (key === "cov" || key === "anom") lo = Math.max(0, lo);
       const X = (s) => m.l + (s / L) * (W - m.l - m.r), Y = (v) => m.t + (1 - (v - lo) / (hi - lo)) * (H - m.t - m.b);
@@ -796,20 +799,19 @@
       let grid = "";
       for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) grid += `<line class="gl" x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`;
       for (let s = 0; s <= L; s += 100) grid += `<text class="ax" x="${X(s)}" y="${H - 8}" text-anchor="middle">${s} m</text>`;
+      if (key === "anom") grid += `<line class="warn" x1="${m.l}" x2="${W - m.r}" y1="${Y(WARN)}" y2="${Y(WARN)}"/><text class="warn-t" x="${W - m.r - 4}" y="${Y(WARN) - 5}" text-anchor="end">${t().warnLine(WARN)}</text>`;
       let bandPath = "";
       if (band) {
         // one closed polygon per run of segments that have a band
         let run = [];
         const flush = () => { if (run.length) { const top = run.map((i) => `${X(mid[i]).toFixed(1)},${Y(band[i][2]).toFixed(1)}`), bot = run.slice().reverse().map((i) => `${X(mid[i]).toFixed(1)},${Y(band[i][0]).toFixed(1)}`); bandPath += `<polygon class="band" points="${top.concat(bot).join(" ")}"/>`; } run = []; };
-        band.forEach((b, i) => { if (b && segs[i][key].n_hist >= 2) run.push(i); else flush(); }); flush();
+        band.forEach((b, i) => { if (b) run.push(i); else flush(); }); flush();
       }
       const others = this.d.flights.filter((f) => f.id !== this.sel).map((f) => `<path class="ln-oth" d="${path(ser[f.id])}"/>`).join("");
       const sv = ser[this.sel];
-      // hollow "outside band" markers only for flights that did not build the band (validation flight)
-      const judged = !this.d.normal.includes(this.sel);
       const dots = sv.map((v, i) => {
         if (v == null) return "";
-        const b = band && band[i], out = judged && b && segs[i][key].n_hist >= 2 && (v < b[0] || v > b[2]);
+        const b = band && band[i], out = b && (v < b[0] || v > b[2]);
         return `<circle class="${out ? "dot-out" : "dot"}" cx="${X(mid[i]).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${out ? 4.5 : 3}"/>`;
       }).join("");
       box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${box.parentElement.querySelector("b").textContent}">
@@ -825,7 +827,7 @@
         const g = segs[i], tt = t();
         tip.innerHTML = `<b>${tt.range(Math.round(g.s0), Math.round(g.s1))}</b>` +
           this.d.flights.map((f) => `<div class="${f.id === this.sel ? "on" : ""}"><span>${tt.flight(this.noOf(f.id))}</span><span>${fmtv(ser[f.id][i], i, f.id)}</span></div>`).join("") +
-          (band && band[i] && g[key].n_hist >= 2 ? `<div class="bd"><span>P10 ${tt.to} P90</span><span>${band[i][0].toFixed(2)} ${tt.to} ${band[i][2].toFixed(2)}</span></div>` : "");
+          (band && band[i] ? `<div class="bd"><span>P10 ${tt.to} P90</span><span>${band[i][0].toFixed(2)} ${tt.to} ${band[i][2].toFixed(2)}</span></div>` : "");
         tip.hidden = false;
         const px = X(mid[i]) * (r.width / W);
         tip.style.left = Math.min(r.width - tip.offsetWidth - 4, Math.max(4, px + 12)) + "px";
@@ -834,16 +836,20 @@
     },
     table() {
       const tt = t(), id = this.sel;
-      const pos = (v, b, n) => (v == null || !b || n < 2 ? "" : v < b[0] ? ` <span class="tag pre">${tt.below}</span>` : v > b[2] ? ` <span class="tag on">${tt.above}</span>` : "");
+      const pos = (v, b) => (v == null || !b ? "" : v < b[0] ? ` <span class="tag pre">${tt.below}</span>` : v > b[2] ? ` <span class="tag on">${tt.above}</span>` : "");
       const f2 = (v) => (v == null ? tt.na : v.toFixed(2));
       $("#cmpTable tbody").innerHTML = this.d.segments.map((g) => `<tr>
         <td class="mono">${tt.range(Math.round(g.s0), Math.round(g.s1))}</td>
         <td class="num">${g.cov[id] == null ? tt.na : g.cov[id].toFixed(1) + "%"}</td>
         <td class="num">${g.anom[id] == null ? tt.na : g.anom[id].toFixed(1) + "%"}</td>
-        <td class="num">${f2(g.S.v[id])}${pos(g.S.v[id], g.S.band, g.S.n_hist)}</td>
-        <td class="num">${g.S.band && g.S.n_hist >= 2 ? `${f2(g.S.band[0])} ${tt.to} ${f2(g.S.band[2])}` : tt.na}</td>
-        <td class="num">${f2(g.b.v[id])}${pos(g.b.v[id], g.b.band, g.b.n_hist)}</td>
-        <td class="num">${g.b.band && g.b.n_hist >= 2 ? `${f2(g.b.band[0])} ${tt.to} ${f2(g.b.band[2])}` : tt.na}</td></tr>`).join("");
+        <td class="num">${f2(g.S.v[id])}${pos(g.S.v[id], g.S.band)}</td>
+        <td class="num">${g.S.band ? `${f2(g.S.band[0])} ${tt.to} ${f2(g.S.band[2])}` : tt.na}</td>
+        <td class="num">${f2(g.b.v[id])}${pos(g.b.v[id], g.b.band)}</td>
+        <td class="num">${g.b.band ? `${f2(g.b.band[0])} ${tt.to} ${f2(g.b.band[2])}` : tt.na}</td>
+        <td class="num">${g.a ? f2(g.a.v[id]) + pos(g.a.v[id], g.a.band) : tt.na}</td>
+        <td class="num">${g.tex ? f2(g.tex.v[id]) + pos(g.tex.v[id], g.tex.band) : tt.na}</td>
+        <td class="num">${g.L ? f2(g.L.v[id]) + pos(g.L.v[id], g.L.band) : tt.na}</td>
+        <td class="num">${g.frag ? f2(g.frag.v[id]) + pos(g.frag.v[id], g.frag.band) : tt.na}</td></tr>`).join("");
     },
   };
 

@@ -71,11 +71,11 @@
  "sigma": {
   "earlier": [
    "flight001",
-   "flight002",
-   "flight003"
+   "flight002"
   ],
   "min_hist": 3,
-  "bins_20_with_sigma": 31,
-  "bins_50_with_sigma": 12
+  "in_comparison": true,
+  "bins_20_with_sigma": 0,
+  "bins_50_with_sigma": 0
  }
 }

@@ -71,11 +71,11 @@
   "earlier": [
    "flight001",
    "flight002",
-   "flight003",
    "flight004",
    "flight005"
   ],
   "min_hist": 3,
+  "in_comparison": true,
   "bins_20_with_sigma": 30,
   "bins_50_with_sigma": 12
  }

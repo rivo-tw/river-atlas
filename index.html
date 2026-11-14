@@ -146,7 +146,7 @@
   <div class="wrap">
     <header class="block-head">
       <h2 id="cmpTitle" data-i18n="cmpTitle">跨趟比較</h2>
-      <p data-i18n="cmpLede">6 趟飛行都對齊到同一條參考河道（全長 647.8 公尺），每 20 公尺一段。點選下面的趟次，3 張圖會用橘色標出那一趟，灰線是其他趟次</p>
+      <p data-i18n="cmpLede">6 趟飛行都對齊到同一條參考河道（全長 647.8 公尺），每 20 公尺一段。點選下面的趟次，每張圖都會用橘色標出那一趟，灰線是其他趟次</p>
     </header>
     <div class="cmp-pick" id="cmpPick" role="radiogroup" aria-label="標示的趟次"></div>
     <div class="charts">
@@ -155,15 +155,31 @@
         <div class="chart-box"></div>
       </figure>
       <figure class="chart" id="chartA">
-        <figcaption><b data-i18n="cAT">水色異常比例（%）</b><span data-i18n="cAD">系統判為水色異常的面積占水面的比例，每 20 公尺取所有畫面的平均。滑鼠移上去可看到這一段有幾格畫面達 15% 以上</span></figcaption>
+        <figcaption><b data-i18n="cAT">水色異常比例（%）</b><span data-i18n="cAD">系統判為水色異常的面積占水面的比例，每 20 公尺取所有畫面的平均。虛線是系統的異色警戒線 25%。滑鼠移上去可看到這一段有幾格畫面達 15% 以上</span></figcaption>
         <div class="chart-box"></div>
       </figure>
       <figure class="chart" id="chartS">
-        <figcaption><b data-i18n="cST">水色 HSV 飽和度</b><span data-i18n="cSD">數值越低，水色越灰淡。淡藍色帶是第 1 至 5 趟的參考帶（P10 至 P90）</span></figcaption>
+        <figcaption><b data-i18n="cST">水色 HSV 飽和度</b><span data-i18n="cSD">數值越低，水色越灰淡。淡藍色帶是全部趟次的參考帶（P10 至 P90）</span></figcaption>
         <div class="chart-box"></div>
       </figure>
       <figure class="chart" id="chartB">
-        <figcaption><b data-i18n="cBT">水色 Lab b*（藍黃軸）</b><span data-i18n="cBD">數值越高越偏黃，越低越偏藍。淡藍色帶是第 1 至 5 趟的參考帶（P10 至 P90）</span></figcaption>
+        <figcaption><b data-i18n="cBT">水色 Lab b*（藍黃軸）</b><span data-i18n="cBD">數值越高越偏黃，越低越偏藍。淡藍色帶是全部趟次的參考帶（P10 至 P90）</span></figcaption>
+        <div class="chart-box"></div>
+      </figure>
+      <figure class="chart" id="chartAa">
+        <figcaption><b data-i18n="cAaT">水色 Lab a*（綠紅軸）</b><span data-i18n="cAaD">數值越高越偏紅，越低越偏綠。淡藍色帶是全部趟次的參考帶（P10 至 P90）</span></figcaption>
+        <div class="chart-box"></div>
+      </figure>
+      <figure class="chart" id="chartT">
+        <figcaption><b data-i18n="cTT">水面紋理指數</b><span data-i18n="cTD">水面上一條一條長條紋路的明顯程度，每趟全河的平常值設為 100。數值越高，紋路越明顯，例如被水流拉長的漩渦紋。淡藍色帶是全部趟次的參考帶（P10 至 P90）</span></figcaption>
+        <div class="chart-box"></div>
+      </figure>
+      <figure class="chart" id="chartL">
+        <figcaption><b data-i18n="cLT">水面亮度 Lab L*</b><span data-i18n="cLD">數值越高，水面越亮。陽光、陰影和水的混濁程度都會改變亮度。淡藍色帶是全部趟次的參考帶（P10 至 P90）</span></figcaption>
+        <div class="chart-box"></div>
+      </figure>
+      <figure class="chart" id="chartF">
+        <figcaption><b data-i18n="cFT">水面碎裂程度（%）</b><span data-i18n="cFD">水面顏色和旁邊落差大、看起來一塊一塊的面積比例，每 20 公尺取所有畫面的平均。淡藍色帶是全部趟次的參考帶（P10 至 P90）</span></figcaption>
         <div class="chart-box"></div>
       </figure>
     </div>
@@ -180,16 +196,21 @@
             <th scope="col" class="num" data-i18n="cThSBand">參考帶</th>
             <th scope="col" class="num" data-i18n="cThB">Lab b*</th>
             <th scope="col" class="num" data-i18n="cThBBand">參考帶</th>
+            <th scope="col" class="num" data-i18n="cThAa">Lab a*</th>
+            <th scope="col" class="num" data-i18n="cThT">水面紋理</th>
+            <th scope="col" class="num" data-i18n="cThL">亮度 L*</th>
+            <th scope="col" class="num" data-i18n="cThF">碎裂程度</th>
           </tr></thead>
           <tbody></tbody>
         </table>
       </div>
     </details>
     <ul class="cmp-notes">
-      <li data-i18n="cN1">P10 至 P90：把第 1 至 5 趟同一段的數值由小排到大，去掉最低和最高各一成之後的範圍</li>
-      <li data-i18n="cN2">第 6 趟（11/5）鏡頭加了 ND8PL 濾鏡，當作驗證航次，不加入參考帶。空心圓是超出參考帶的河段</li>
-      <li data-i18n="cN3">超出參考帶表示這一段的影像水色和前 5 趟不同。光線、濾鏡、白平衡和拍攝角度都會改變影像水色，要回到原始畫面和現場確認原因</li>
-      <li data-i18n="cN4">第 4 趟（10/27）的比較資料來自系統資料庫，原始影片是 CPL 偏光鏡；地圖、長卷和分析影片用同一天的 N8PL 影片</li>
+      <li data-i18n="cN1">參考帶用目前全部趟次計算，每多飛一趟就把新的一趟加進去重算。P10 至 P90 是把全部趟次同一段的數值由小排到大，去掉最低和最高各一成之後的範圍</li>
+      <li data-i18n="cN2">選哪一趟，參考帶都一樣。空心圓是選到的這一趟超出參考帶的河段</li>
+      <li data-i18n="cN3">超出參考帶表示這一段的影像水色和多數趟次不同。光線、濾鏡、白平衡和拍攝角度都會改變影像水色，要回到原始畫面和現場確認原因</li>
+      <li data-i18n="cN4">每天只取 1 支影片</li>
+      <li data-i18n="cN5">第 3 趟（10/20）河面大半被樹影遮住，水面和水色的判讀受影響，所以不納入跨趟比較</li>
     </ul>
   </div>
 </section>
