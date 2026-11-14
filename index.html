@@ -171,17 +171,10 @@
         <div class="chart-box"></div>
       </figure>
       <figure class="chart" id="chartT">
-        <figcaption><b data-i18n="cTT">水面紋理指數</b><span data-i18n="cTD">水面上一條一條長條紋路的明顯程度，每趟全河的平常值設為 100。數值越高，紋路越明顯，例如被水流拉長的漩渦紋。淡藍色帶是全部趟次的參考帶（P10 至 P90）</span></figcaption>
+        <figcaption><b data-i18n="cTT">水面紋理</b><span data-i18n="cTD">水面上一條一條長條紋路的明顯程度，每一段都和之前至少 3 趟的同一段比較，0 代表和平常一樣。淡藍色帶是平常範圍（差 1 個標準差以內），往上超出代表紋路比平常明顯，例如被水流拉長的漩渦紋。前 3 趟用來建立平常範圍，所以沒有線</span></figcaption>
         <div class="chart-box"></div>
       </figure>
-      <figure class="chart" id="chartL">
-        <figcaption><b data-i18n="cLT">水面亮度 Lab L*</b><span data-i18n="cLD">數值越高，水面越亮。陽光、陰影和水的混濁程度都會改變亮度。淡藍色帶是全部趟次的參考帶（P10 至 P90）</span></figcaption>
-        <div class="chart-box"></div>
-      </figure>
-      <figure class="chart" id="chartF">
-        <figcaption><b data-i18n="cFT">水面碎裂程度（%）</b><span data-i18n="cFD">水面顏色和旁邊落差大、看起來一塊一塊的面積比例，每 20 公尺取所有畫面的平均。淡藍色帶是全部趟次的參考帶（P10 至 P90）</span></figcaption>
-        <div class="chart-box"></div>
-      </figure>
+
     </div>
     <div class="cmp-legend" id="cmpLegend" aria-hidden="true"></div>
     <details class="cmp-table">
@@ -198,8 +191,6 @@
             <th scope="col" class="num" data-i18n="cThBBand">參考帶</th>
             <th scope="col" class="num" data-i18n="cThAa">Lab a*</th>
             <th scope="col" class="num" data-i18n="cThT">水面紋理</th>
-            <th scope="col" class="num" data-i18n="cThL">亮度 L*</th>
-            <th scope="col" class="num" data-i18n="cThF">碎裂程度</th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -252,7 +243,7 @@
     </div>
 
 
-    <h3 class="sub" data-i18n="rangeTitle">這一趟的範圍</h3>
+    <h3 class="sub" data-i18n="rangeTitle">飛行規格（各趟平均）</h3>
     <ul class="facts" id="facts"></ul>
   </div>
 </section>

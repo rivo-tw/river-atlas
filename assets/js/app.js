@@ -18,12 +18,12 @@
   };
   const LAYERS = [
     { id: "water", state: "ready", sw: "#0090e0" },
-    { id: "baseline", state: "prelim" },
+    { id: "baseline", state: "ready" },
     { id: "color", state: "ready", sw: "#ff5108" },
     { id: "debris", state: "ready", sw: "#ff5108" },
-    { id: "veg", state: "prelim", sw: "#6f8f00" },
-    { id: "habitat", state: "prelim", sw: "#00385e" },
-    { id: "change", state: "prelim" },
+    { id: "veg", state: "ready", sw: "#6f8f00" },
+    { id: "habitat", state: "ready", sw: "#00385e" },
+    { id: "change", state: "ready" },   // 2026-11-14 user: all seven layers are live
   ];
   const GROUP_LAYER = { debris: "debris", vegetation: "veg", habitat: "habitat" };
 
@@ -551,13 +551,14 @@
     }).join("");
   }
   function renderFacts() {
-    const f = S.data.flight, tt = t().facts;
+    // 2026-11-14 user: the route and settings are the same every flight, so this is a spec: the mean over all flights
+    const sp = S.index.site.spec, tt = t().facts;
+    if (!sp) return;
     const rows = [
-      [tt.date, f.date], [tt.time, f.start_local.replace(/\.\d+/, "")],
-      [tt.alt, `${f.altitude_m} m`], [tt.gsd, `${f.gsd_cm} cm/px`], [tt.len, `${f.length_m} m`],
-      [tt.dur, `${f.duration_s} s`], [tt.frames, `${f.frames_analysed}`],
+      [tt.date, tt.dateRange(sp.first, sp.last, sp.n)], [tt.time, `${sp.t0} ${t().to} ${sp.t1}`],
+      [tt.alt, `${sp.alt_m} m`], [tt.gsd, `${sp.gsd_cm} cm/px`], [tt.len, `${sp.length_m} m`],
+      [tt.dur, `${sp.duration_s} s`], [tt.frames, `${sp.frames}`],
     ];
-    if (S.flight.note) rows.push([tt.note, S.flight.note[S.lang]]);
     $("#facts").innerHTML = rows.map(([k, v]) => `<li><span>${k}</span><span>${v}</span></li>`).join("");
   }
   function renderFlights() {
@@ -578,7 +579,10 @@
   }
 
   function renderVideo() {
-    const v = $("#clip"), p = S.flight.path, f = S.data.flight;
+    // 2026-11-14 user: the analysis video is always the first flight (9/17), whatever flight is selected
+    const sv = S.index.site.video;
+    const vid = sv ? { ...sv, path: "data/" + sv.path } : { path: S.flight.path, date: S.data.flight.date, duration_s: S.data.flight.duration_s };
+    const v = $("#clip"), p = vid.path, f = vid;
     if (v.dataset.src !== p) {
       v.dataset.src = p; v.pause(); v.poster = p + "analysis.jpg";
       v.innerHTML = `<source src="${p}analysis.mp4" type="video/mp4">`; v.load();
@@ -780,7 +784,7 @@
     },
     draw() {
       if (!this.d) return;
-      [["chartCov", "cov"], ["chartA", "anom"], ["chartS", "S"], ["chartB", "b"], ["chartAa", "a"], ["chartT", "tex"], ["chartL", "L"], ["chartF", "frag"]].filter(([, k]) => k in this.d.segments[0]).forEach(([id, key]) => this.chart($("#" + id + " .chart-box"), key));
+      [["chartCov", "cov"], ["chartA", "anom"], ["chartS", "S"], ["chartB", "b"], ["chartAa", "a"], ["chartT", "texz"]].filter(([, k]) => k in this.d.segments[0]).forEach(([id, key]) => this.chart($("#" + id + " .chart-box"), key));
     },
     chart(box, key) {
       const segs = this.d.segments, L = this.d.length_m, ser = this.series(key);
@@ -792,6 +796,7 @@
       const all = Object.values(ser).flat().concat(band ? band.flat() : []).concat(key === "anom" ? [WARN] : []).filter((v) => v != null);
       let lo = Math.min(...all), hi = Math.max(...all); const pad = (hi - lo) * 0.06; lo -= pad; hi += pad;
       if (key === "cov" || key === "anom") lo = Math.max(0, lo);
+      if (key === "texz") { lo = Math.min(lo, -3); hi = Math.max(hi, 3); }
       const X = (s) => m.l + (s / L) * (W - m.l - m.r), Y = (v) => m.t + (1 - (v - lo) / (hi - lo)) * (H - m.t - m.b);
       const mid = segs.map((g) => (g.s0 + g.s1) / 2);
       const path = (vals) => { let d = "", pen = false; vals.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? "L" : "M"}${X(mid[i]).toFixed(1)},${Y(v).toFixed(1)}`; pen = true; }); return d; };
@@ -827,7 +832,7 @@
         const g = segs[i], tt = t();
         tip.innerHTML = `<b>${tt.range(Math.round(g.s0), Math.round(g.s1))}</b>` +
           this.d.flights.map((f) => `<div class="${f.id === this.sel ? "on" : ""}"><span>${tt.flight(this.noOf(f.id))}</span><span>${fmtv(ser[f.id][i], i, f.id)}</span></div>`).join("") +
-          (band && band[i] ? `<div class="bd"><span>P10 ${tt.to} P90</span><span>${band[i][0].toFixed(2)} ${tt.to} ${band[i][2].toFixed(2)}</span></div>` : "");
+          (band && band[i] ? `<div class="bd"><span>${key === "texz" ? tt.usualRange : `P10 ${tt.to} P90`}</span><span>${band[i][0].toFixed(2)} ${tt.to} ${band[i][2].toFixed(2)}</span></div>` : "");
         tip.hidden = false;
         const px = X(mid[i]) * (r.width / W);
         tip.style.left = Math.min(r.width - tip.offsetWidth - 4, Math.max(4, px + 12)) + "px";
@@ -847,9 +852,7 @@
         <td class="num">${f2(g.b.v[id])}${pos(g.b.v[id], g.b.band)}</td>
         <td class="num">${g.b.band ? `${f2(g.b.band[0])} ${tt.to} ${f2(g.b.band[2])}` : tt.na}</td>
         <td class="num">${g.a ? f2(g.a.v[id]) + pos(g.a.v[id], g.a.band) : tt.na}</td>
-        <td class="num">${g.tex ? f2(g.tex.v[id]) + pos(g.tex.v[id], g.tex.band) : tt.na}</td>
-        <td class="num">${g.L ? f2(g.L.v[id]) + pos(g.L.v[id], g.L.band) : tt.na}</td>
-        <td class="num">${g.frag ? f2(g.frag.v[id]) + pos(g.frag.v[id], g.frag.band) : tt.na}</td></tr>`).join("");
+        <td class="num">${g.texz && g.texz.v[id] != null ? f2(g.texz.v[id]) + pos(g.texz.v[id], g.texz.band) : tt.na}</td></tr>`).join("");
     },
   };
 
