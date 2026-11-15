@@ -311,6 +311,16 @@ h1 .place { font-size: clamp(1rem, 0.9rem + 0.4vw, 1.125rem); font-weight: 500; 
 .strip-ruler .sec { position: absolute; top: 0; height: 4px; border-radius: 4px; background: var(--blue-100); }
 
 /* ---------------- sections table ---------------- */
+.sec-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; margin-bottom: 20px; }
+.sec-top .block-head { margin-bottom: 0; }
+.dl { display: grid; justify-items: end; gap: 4px; margin-left: auto; }
+.dl-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: var(--r-s); background: var(--action); color: #fff;
+  font-weight: 700; font-size: 0.875rem; text-decoration: none; transition: filter 0.15s; }
+.dl-btn:hover { filter: brightness(1.08); }
+.dl-btn:focus-visible, .dl-zip:focus-visible { outline: 3px solid color-mix(in srgb, var(--blue-600) 60%, transparent); outline-offset: 2px; }
+.dl-zip { font-size: 0.8125rem; color: var(--blue-700); }
+.dl-note { font-size: 0.75rem; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .dl { justify-items: start; margin-left: 0; } }
 .table-wrap { overflow-x: auto; border-radius: var(--r-m); border: 1px solid var(--line); background: var(--bg); }
 table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }

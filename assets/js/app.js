@@ -517,7 +517,15 @@
     ];
     $("#stats").innerHTML = rows.map(([k, v, u]) => `<div><dt>${k}</dt><dd>${v}${u ? `<small>${u}</small>` : ""}</dd></div>`).join("");
   }
+  function renderDownload() {
+    const f = S.flight, tt = t(), stem = `${f.path}geo/flight${f.no}_${f.date}`;
+    $("#dlGeo").href = `${stem}_sections_${S.bin}m.geojson`;
+    $("#dlGeo").setAttribute("download", `river_atlas_flight${f.no}_${f.date}_sections_${S.bin}m.geojson`);
+    $("#dlZip").href = `${f.path}geo/river_atlas_flight${f.no}_${f.date}_geojson.zip`;
+    $("#dlNote").textContent = tt.dlNote(f.no, S.bin);
+  }
   function renderTable() {
+    renderDownload();
     const bins = S.data.bins[S.bin], tt = t();
     const maxW = Math.max(...bins.map((b) => b.water_w || 0));
     $("#secTable tbody").innerHTML = bins.map((b) => `

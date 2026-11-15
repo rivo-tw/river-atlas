@@ -118,10 +118,20 @@
 <!-- ============ sections table ============ -->
 <section class="block alt" id="sections" aria-labelledby="secTitle">
   <div class="wrap">
-    <header class="block-head">
-      <h2 id="secTitle" data-i18n="secTitle">河段一覽</h2>
-      <p data-i18n="secLede">位置從航線起點起算，每一列是一段，點選後地圖會移到那一段</p>
-    </header>
+    <div class="sec-top">
+      <header class="block-head">
+        <h2 id="secTitle" data-i18n="secTitle">河段一覽</h2>
+        <p data-i18n="secLede">位置從航線起點起算，每一列是一段，點選後地圖會移到那一段</p>
+      </header>
+      <div class="dl" id="secDl">
+        <a class="dl-btn" id="dlGeo" href="#" download>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-i18n="dlGeo">下載 GeoJSON</span>
+        </a>
+        <a class="dl-zip" id="dlZip" href="#" download data-i18n="dlZip">全部圖層與欄位說明（ZIP）</a>
+        <span class="dl-note" id="dlNote"></span>
+      </div>
+    </div>
     <div class="table-wrap">
       <table class="sections" id="secTable">
         <thead><tr>
