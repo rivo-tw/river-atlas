@@ -27,6 +27,7 @@
     <a href="#strip" data-i18n="navStrip">河道長卷</a>
     <a href="#sections" data-i18n="navSections">河段一覽</a>
     <a href="#compare" data-i18n="navCompare">跨趟比較</a>
+    <a href="#flow" data-i18n="navFlow">定點測流</a>
     <a href="#video" data-i18n="navVideo">分析影片</a>
     <a href="#method" data-i18n="navMethod">方法</a>
     <a href="#about" data-i18n="navAbout">關於計畫</a>
@@ -211,6 +212,75 @@
       <li data-i18n="cN2">選哪一趟，參考帶都一樣。空心圓是選到的這一趟超出參考帶的河段</li>
       <li data-i18n="cN3">超出參考帶表示這一段的影像水色和多數趟次不同。光線、濾鏡、白平衡和拍攝角度都會改變影像水色，要回到原始畫面和現場確認原因</li>
       <li data-i18n="cN4">每天只取 1 支影片</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ flow (2026-11-15) ============ -->
+<section class="block alt" id="flow" aria-labelledby="flowTitle">
+  <div class="wrap">
+    <header class="block-head">
+      <h2 id="flowTitle" data-i18n="flowTitle">定點測流</h2>
+      <p data-i18n="flowLede">無人機停在同一個位置的正上方（離水面約 47 公尺），鏡頭朝下錄影約 20 到 40 秒。系統追蹤水面紋路在畫面上的移動，整支影片平均後做成流場動畫：粒子照量到的流向和流速移動，顏色代表表面流速。流速經理論公式推算</p>
+    </header>
+    <h3 class="flow-h" data-i18n="flowG1">參考河道約 400 至 411 公尺　破堰下方</h3>
+    <div class="flow-grid">
+        <figure class="chart flow-card">
+          <figcaption><b>2026/10/27</b><span><span data-i18n="fMed">表面流速中位數</span> <strong class="flow-v">0.11 m/s</strong></span></figcaption>
+          <div class="flow-media">
+            <video class="flow-vid" data-src="data/flow/1027_411m.mp4" poster="data/flow/1027_411m_poster.jpg" width="960" height="540" muted loop playsinline preload="none" hidden></video>
+            <video class="flow-vid" data-src="data/flow/1027_411m_anim.mp4" poster="data/flow/1027_411m_poster.jpg" width="960" height="540" muted loop playsinline preload="none" aria-label="2026/10/27 流場動畫"></video>
+          </div>
+          <div class="seg seg-wide flow-seg" role="radiogroup" aria-label="畫面">
+            <button type="button" role="radio" aria-checked="false" data-view="0" data-i18n="fvVid">原始影片</button>
+            <button type="button" role="radio" aria-checked="true" data-view="1" data-i18n="fvAnim">流場動畫</button>
+          </div>
+        </figure>
+        <figure class="chart flow-card">
+          <figcaption><b>2026/11/03</b><span><span data-i18n="fMed">表面流速中位數</span> <strong class="flow-v">0.09 m/s</strong></span></figcaption>
+          <div class="flow-media">
+            <video class="flow-vid" data-src="data/flow/1103_400m.mp4" poster="data/flow/1103_400m_poster.jpg" width="960" height="540" muted loop playsinline preload="none" hidden></video>
+            <video class="flow-vid" data-src="data/flow/1103_400m_anim.mp4" poster="data/flow/1103_400m_poster.jpg" width="960" height="540" muted loop playsinline preload="none" aria-label="2026/11/03 流場動畫"></video>
+          </div>
+          <div class="seg seg-wide flow-seg" role="radiogroup" aria-label="畫面">
+            <button type="button" role="radio" aria-checked="false" data-view="0" data-i18n="fvVid">原始影片</button>
+            <button type="button" role="radio" aria-checked="true" data-view="1" data-i18n="fvAnim">流場動畫</button>
+          </div>
+        </figure>
+        <figure class="chart flow-card">
+          <figcaption><b>2026/11/12</b><span><span data-i18n="fMed">表面流速中位數</span> <strong class="flow-v">0.11 m/s</strong></span></figcaption>
+          <div class="flow-media">
+            <video class="flow-vid" data-src="data/flow/1112_411m.mp4" poster="data/flow/1112_411m_poster.jpg" width="960" height="540" muted loop playsinline preload="none" hidden></video>
+            <video class="flow-vid" data-src="data/flow/1112_411m_anim.mp4" poster="data/flow/1112_411m_poster.jpg" width="960" height="540" muted loop playsinline preload="none" aria-label="2026/11/12 流場動畫"></video>
+          </div>
+          <div class="seg seg-wide flow-seg" role="radiogroup" aria-label="畫面">
+            <button type="button" role="radio" aria-checked="false" data-view="0" data-i18n="fvVid">原始影片</button>
+            <button type="button" role="radio" aria-checked="true" data-view="1" data-i18n="fvAnim">流場動畫</button>
+          </div>
+        </figure>
+    </div>
+    <h3 class="flow-h" data-i18n="flowG2">參考河道約 47 公尺　岩盤急流</h3>
+    <div class="flow-grid">
+        <figure class="chart flow-card">
+          <figcaption><b>2026/10/27</b><span><span data-i18n="fMed">表面流速中位數</span> <strong class="flow-v">1.10 m/s</strong></span></figcaption>
+          <div class="flow-media">
+            <video class="flow-vid" data-src="data/flow/1027_047m.mp4" poster="data/flow/1027_047m_poster.jpg" width="960" height="540" muted loop playsinline preload="none" hidden></video>
+            <video class="flow-vid" data-src="data/flow/1027_047m_anim.mp4" poster="data/flow/1027_047m_poster.jpg" width="960" height="540" muted loop playsinline preload="none" aria-label="2026/10/27 流場動畫"></video>
+          </div>
+          <div class="seg seg-wide flow-seg" role="radiogroup" aria-label="畫面">
+            <button type="button" role="radio" aria-checked="false" data-view="0" data-i18n="fvVid">原始影片</button>
+            <button type="button" role="radio" aria-checked="true" data-view="1" data-i18n="fvAnim">流場動畫</button>
+          </div>
+        </figure>
+    </div>
+    <div class="flow-legend" aria-hidden="true">
+      <span class="fl-scale"><b data-i18n="flowSpeed">表面流速</b><span class="fl-col"><i class="fl-ramp"></i><span class="fl-ticks"><em>0</em><em>0.25</em><em data-i18n="flowMax">0.5 m/s 以上</em></span></span></span>
+    </div>
+    <ul class="cmp-notes">
+      <li data-i18n="fN1">流速經理論公式推算：由水面紋路在畫面上移動的距離，依飛行高度和相機視角換算成實際距離，再除以時間</li>
+      <li data-i18n="fN4">粒子照量到的平均流場移動。破堰下方水流很慢，粒子加速 10 倍播放（畫面標 x10）；岩盤急流照真實速度（x1）。背景影片都是真實速度</li>
+      <li data-i18n="fN2">表面流速中位數只計算有粒子的水面。沒有粒子的水面平滑、沒有紋路可追，不代表沒有流動</li>
+      <li data-i18n="fN3">這是水面的流速，不是整個斷面的平均流速，也不是流量</li>
     </ul>
   </div>
 </section>

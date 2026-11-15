@@ -757,12 +757,33 @@
     },
   };
 
+  /* ---------------------------------------------------------------- 定點測流 (2026-11-16)
+     每張卡片 2 支影片（原始影片、流場動畫）。卡片進入畫面才載入並播放選到的那支，離開就暫停；
+     使用者設定減少動態時不自動播放，改給播放控制列。 */
+  const flowCards = $$(".flow-card").map((card) => {
+    const vids = $$(".flow-vid", card), st = { card, vids, k: 1, seen: false };
+    st.show = () => vids.forEach((v, i) => {
+      v.hidden = i !== st.k;
+      if (i !== st.k) { v.pause(); return; }
+      if (!v.getAttribute("src")) v.src = v.dataset.src;
+      if (reduceMotion) v.controls = true; else if (st.seen) v.play().catch(() => {});
+    });
+    segInit($(".flow-seg", card), (b) => { st.k = +b.dataset.view; st.show(); });
+    return st;
+  });
+  const flowIo = new IntersectionObserver((es) => es.forEach((en) => {
+    const st = flowCards.find((c) => c.card === en.target); if (!st) return;
+    st.seen = en.isIntersecting;
+    if (st.seen) st.show(); else st.vids.forEach((v) => v.pause());
+  }), { threshold: 0.4 });
+  flowCards.forEach((c) => flowIo.observe(c.card));
+
   /* ---------------------------------------------------------------- nav highlight */
   const navLinks = $$(".nav a");
   const io = new IntersectionObserver((es) => es.forEach((en) => {
     if (en.isIntersecting) { navLinks.forEach((a) => a.setAttribute("aria-current", String(a.getAttribute("href") === "#" + en.target.id))); placeNavInd(); }
   }), { rootMargin: "-45% 0px -50% 0px" });
-  ["map", "strip", "sections", "compare", "video", "method", "about"].forEach((id) => io.observe(document.getElementById(id)));
+  ["map", "strip", "sections", "compare", "flow", "video", "method", "about"].forEach((id) => io.observe(document.getElementById(id)));
 
   /* ---------------------------------------------------------------- cross-flight comparison
      data/compare.json comes from the RIVO GUI history database: every flight already aligned to
@@ -900,3 +921,4 @@
   }
   boot();
 })();
+
