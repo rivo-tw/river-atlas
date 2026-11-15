@@ -16,12 +16,10 @@
  "color_warn_frames": 0,
  "objects": {
   "underwater_debris": 1,
-  "wood_branch": 18,
-  "plastice_bag": 1,
-  "unknown_floating_debris": 2,
-  "natural_vegetation": 1
+  "wood_branch": 16,
+  "plastice_bag": 1
  },
- "debris_total": 22,
+ "debris_total": 18,
  "excluded": {
   "m1_tire_plastic": 16,
   "people_frames": 0
@@ -77,5 +75,15 @@
   "in_comparison": true,
   "bins_20_with_sigma": 0,
   "bins_50_with_sigma": 0
+ },
+ "removed_by_review": {
+  "date": "2026-11-16",
+  "ids": [
+   "wood_branch-018",
+   "wood_branch-012",
+   "unknown_floating_debris-020",
+   "natural_vegetation-022",
+   "unknown_floating_debris-021"
+  ]
  }
 }

@@ -15,12 +15,11 @@
  "warn_thr": 25.0,
  "color_warn_frames": 4,
  "objects": {
-  "natural_vegetation": 15,
-  "wood_branch": 7,
+  "wood_branch": 4,
   "plastice_bag": 1,
   "unknown_floating_debris": 2
  },
- "debris_total": 10,
+ "debris_total": 7,
  "excluded": {
   "m1_tire_plastic": 66,
   "people_frames": 6
@@ -77,5 +76,28 @@
   "in_comparison": true,
   "bins_20_with_sigma": 0,
   "bins_50_with_sigma": 0
+ },
+ "removed_by_review": {
+  "date": "2026-11-16",
+  "ids": [
+   "natural_vegetation-013",
+   "wood_branch-021",
+   "natural_vegetation-002",
+   "natural_vegetation-010",
+   "natural_vegetation-011",
+   "natural_vegetation-012",
+   "natural_vegetation-004",
+   "natural_vegetation-003",
+   "natural_vegetation-009",
+   "natural_vegetation-014",
+   "wood_branch-018",
+   "natural_vegetation-006",
+   "natural_vegetation-000",
+   "wood_branch-017",
+   "natural_vegetation-005",
+   "natural_vegetation-001",
+   "natural_vegetation-007",
+   "natural_vegetation-008"
+  ]
  }
 }

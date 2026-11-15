@@ -15,11 +15,11 @@
  "warn_thr": 25.0,
  "color_warn_frames": 5,
  "objects": {
-  "wood_branch": 5,
+  "wood_branch": 4,
   "plastice_bag": 2,
   "plastic_bottle": 1
  },
- "debris_total": 8,
+ "debris_total": 7,
  "excluded": {
   "m1_tire_plastic": 86,
   "people_frames": 3
@@ -78,5 +78,11 @@
   "in_comparison": true,
   "bins_20_with_sigma": 30,
   "bins_50_with_sigma": 12
+ },
+ "removed_by_review": {
+  "date": "2026-11-16",
+  "ids": [
+   "wood_branch-003"
+  ]
  }
 }
